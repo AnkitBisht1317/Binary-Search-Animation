@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search Visualizer</title>
+    <style>
+        /* General Styling */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #207063;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+.container {
+    width: 80%;
+    max-width: 900px;
+    padding: 30px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 30px;
+    font-size: 2rem;
+    color: black;
+}
+/* Message Box Styling */
+#message-box {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #ffefef;
+    color: #d9534f;
+    font-weight: bold;
+    display: none; /* Hidden by default */
+}
+
+/* Array Visualization Container */
+#array-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #e9eff7;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.tile {
+    width: 50px;
+    height: 50px;
+    background-color: #4a90e2;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 18px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+}
+
+.tile:hover {
+    transform: scale(1.1);
+}
+
+/* Controls Section */
+.controls {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+input[type="number"] {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 200px;
+    transition: all 0.3s ease;
+}
+
+input[type="number"]:focus {
+    border-color: #4a90e2;
+    outline: none;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #357ab7;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+button:active {
+    background-color: #2a5d87;
+}
+
+/* Highlight Colors */
+.tile[data-state="mid"] {
+    background-color: #ff7f50;
+}
+
+.tile[data-state="range"] {
+    background-color: #87cefa;
+}
+
+.tile[data-state="found"] {
+    background-color: #32cd32;
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Binary Search Visualizer</h1>
+        
+        <!-- Container to display the array tiles -->
+        <div id="array-container"></div>
+
+        <!-- Element to display messages (like "Target not found") -->
+        <div id="message-box"></div>
+
+        <!-- Controls to add elements to the array -->
+        <div class="controls">
+            <input type="number" id="element-input" placeholder="Enter array element" />
+            <button onclick="addElement()">Add Element</button>
+        </div>
+
+        <!-- Controls to input target value and start the search -->
+        <div class="controls">
+            <input type="number" id="target-input" placeholder="Enter target value" />
+            <button onclick="startSearch()">Start Search</button>
+        </div>
+    </div>
+    <script>
+        let array = []; // Start with an empty array
+const container = document.getElementById('array-container');
+const messageBox = document.getElementById('message-box'); // Message box element
+
+// Function to create tiles for each element in the array
+function createTiles() {
+    container.innerHTML = ''; // Clear the container
+
+    // Create tiles for each element in the array
+    array.forEach((value, index) => {
+        const tile = document.createElement('div');
+        tile.classList.add('tile');
+        tile.textContent = value;
+        tile.setAttribute('id', `tile-${index}`);
+        container.appendChild(tile);
+    });
+
+    messageBox.style.display = 'none'; // Hide message box when creating new tiles
+}
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Function to visualize binary search on the array
+async function binarySearchVisualizer(target) {
+    let left = 0;
+    let right = array.length - 1;
+    let found = false;
+
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+
+        // Highlight the current range
+        highlightRange(left, right, mid);
+
+        await delay(1000); // Wait for 1 second
+
+        if (array[mid] === target) {
+            highlightFound(mid); // Highlight the found element
+            found = true;
+            break;
+        } else if (array[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    if (!found) {
+        showMessage("Target not found!"); // Show message inside the box
+    }
+}
+
+function highlightRange(left, right, mid) {
+    resetTiles();
+
+    for (let i = left; i <= right; i++) {
+        document.getElementById(`tile-${i}`).setAttribute('data-state', 'range'); // Light blue for the search range
+    }
+
+    document.getElementById(`tile-${mid}`).setAttribute('data-state', 'mid'); // Highlight mid element in orange
+}
+
+function highlightFound(index) {
+    document.getElementById(`tile-${index}`).setAttribute('data-state', 'found'); // Highlight found element in green
+    showMessage(`Target found at index ${index}!`); // Show success message
+}
+
+function resetTiles() {
+    array.forEach((_, index) => {
+        document.getElementById(`tile-${index}`).removeAttribute('data-state'); // Reset to default blue color
+    });
+}
+
+function showMessage(message) {
+    messageBox.textContent = message;
+    messageBox.style.display = 'block'; // Show the message box
+}
+
+function startSearch() {
+    const target = parseInt(document.getElementById('target-input').value);
+    if (isNaN(target)) {
+        showMessage("Please enter a valid number!");
+        return;
+    }
+    binarySearchVisualizer(target);
+}
+
+function addElement() {
+    const newElement = parseInt(document.getElementById('element-input').value);
+    if (isNaN(newElement)) {
+        showMessage("Please enter a valid number!");
+        return;
+    }
+    array.push(newElement); // Add new element to the array
+    array.sort((a, b) => a - b); // Keep the array sorted
+    createTiles(); // Recreate tiles for the updated array
+    document.getElementById('element-input').value = ''; // Clear the input
+}
+
+createTiles(); // Initial setup of the array tiles
+
+    </script>
+</body>
+</html>
