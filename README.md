@@ -8,7 +8,6 @@ A simple and interactive web application that visualizes the binary search algor
 - [Installation](#installation)
 - [Usage](#usage)
 - [How It Works](#how-it-works)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Features
